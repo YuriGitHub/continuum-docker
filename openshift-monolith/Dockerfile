@@ -1,16 +1,44 @@
-FROM ubuntu:16.04
-LABEL maintainer.name="Alejandro Guzman"
-LABEL maintainer.email="a.guillermo.guzman@gmail.com"
+FROM registry.access.redhat.com/rhel7
 
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 && \
-    echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list && \
-    apt-get update && apt-get install -y \
-    curl=7.47.0-1ubuntu2.8 \
-    mongodb-org \
-    # Enables Tasks to connect via SSH
-    openssh-client=1:7.2p2-4ubuntu2.4 \
-    python=2.7.12-1~16.04 \
-    sudo=1.8.16-0ubuntu1.5
+### Required Atomic/OpenShift Labels - https://github.com/projectatomic/ContainerApplicationGenericLabels
+LABEL name="Continuum" \
+      maintainer="dfreeman@collab.net" \
+      vendor="CollabNet VersionOne" \
+      version="18.2" \
+      release="18.2" \
+      summary="Continuum summary TODO" \
+      description="Continuum description TODO"
+
+### add licenses to this directory
+COPY licenses /licenses
+
+# RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 && \
+#     echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list && \
+#     apt-get update && apt-get install -y \
+#     curl=7.47.0-1ubuntu2.8 \
+#     mongodb-org \
+#     # Enables Tasks to connect via SSH
+#     openssh-client=1:7.2p2-4ubuntu2.4 \
+#     python=2.7.12-1~16.04 \
+#     sudo=1.8.16-0ubuntu1.5
+
+### Add necessary Red Hat repos here
+RUN REPOLIST=rhel-7-server-rpms,rhel-7-server-optional-rpms \
+### Add your package needs here
+    INSTALL_PKGS="sudo" && \
+    yum -y update-minimal --disablerepo "*" --enablerepo rhel-7-server-rpms --setopt=tsflags=nodocs \
+      --security --sec-severity=Important --sec-severity=Critical && \
+    yum -y install --disablerepo "*" --enablerepo ${REPOLIST} --setopt=tsflags=nodocs ${INSTALL_PKGS} && \
+    yum clean all
+
+### Add necessary Red Hat repos here
+RUN REPOLIST=rhel-7-server-rpms,rhel-7-server-optional-rpms \
+### Add your package needs here
+    INSTALL_PKGS="mongodb-org" && \
+    yum -y update-minimal --disablerepo "*" --enablerepo rhel-7-server-rpms --setopt=tsflags=nodocs \
+      --security --sec-severity=Important --sec-severity=Critical && \
+    yum -y install --disablerepo "*" --enablerepo ${REPOLIST} --setopt=tsflags=nodocs ${INSTALL_PKGS} && \
+    yum clean all
 
 ARG INSTALLER
 LABEL installer="$INSTALLER"

@@ -1,0 +1,1 @@
+      /bin/bash -c "ctm-start-services && tail -f /var/continuum/log/ctm-ui.log"

@@ -31,14 +31,8 @@ RUN REPOLIST=rhel-7-server-rpms,rhel-7-server-optional-rpms \
     yum -y install --disablerepo "*" --enablerepo ${REPOLIST} --setopt=tsflags=nodocs ${INSTALL_PKGS} && \
     yum clean all
 
-### Add necessary Red Hat repos here
-RUN REPOLIST=rhel-7-server-rpms,rhel-7-server-optional-rpms \
-### Add your package needs here
-    INSTALL_PKGS="mongodb-org" && \
-    yum -y update-minimal --disablerepo "*" --enablerepo rhel-7-server-rpms --setopt=tsflags=nodocs \
-      --security --sec-severity=Important --sec-severity=Critical && \
-    yum -y install --disablerepo "*" --enablerepo ${REPOLIST} --setopt=tsflags=nodocs ${INSTALL_PKGS} && \
-    yum clean all
+COPY mongodb-org-3.6.repo /etc/yum.repos.d
+RUN sudo yum install -y mongodb-org
 
 ARG INSTALLER
 LABEL installer="$INSTALLER"
@@ -67,8 +61,8 @@ ENV LD_LIBRARY_PATH="$ORACLE_HOME" \
 
 WORKDIR $CONTINUUM_HOME
 
-RUN groupadd --gid 999 ctmuser && \
-    useradd --uid 999 --gid ctmuser --groups root --create-home ctmuser && \
+RUN groupadd ctmgroup && \
+    useradd --gid ctmgroup --groups root --create-home ctmuser && \
     mkdir --parent /data/db && \
     chown --recursive ctmuser:root \
     /opt/continuum \
@@ -76,17 +70,36 @@ RUN groupadd --gid 999 ctmuser && \
     /var/continuum \
     /data/db
 
-COPY --chown=ctmuser:root ./monolith/entrypoint.sh $CONTINUUM_HOME
-COPY --chown=ctmuser:root ./healthcheck.py $CONTINUUM_HOME
-COPY --chown=ctmuser:root ./run.sh $CONTINUUM_HOME
+RUN chgrp -R root /etc/continuum && \
+    chmod -R g+w /etc/continuum
+
+RUN chgrp -R root /opt/continuum && \
+    chmod -R 777 /opt/continuum
+
+RUN chgrp -R root /var/continuum && \
+    chmod -R 777 /var/continuum
+
+RUN chgrp -R root /data/db && \
+    chmod -R 777 /data/db
+
+RUN chmod g+w /etc/passwd
+
+COPY entrypoint.sh $CONTINUUM_HOME
+RUN chown ctmuser:root $CONTINUUM_HOME/entrypoint.sh
+RUN chmod +x $CONTINUUM_HOME/entrypoint.sh
+
+# COPY --chown=ctmuser:root ./healthcheck.py $CONTINUUM_HOME
+COPY run.sh $CONTINUUM_HOME
+RUN chown ctmuser:root $CONTINUUM_HOME/run.sh
+RUN chmod +x $CONTINUUM_HOME/run.sh
 
 # UI and messagehub ports
 EXPOSE 8080 8083
 
 USER ctmuser
 
-HEALTHCHECK --start-period=3s --interval=3s --retries=3  \
-    CMD ["python", "./healthcheck.py"]
+# HEALTHCHECK --start-period=3s --interval=3s --retries=3  \
+#     CMD ["python", "./healthcheck.py"]
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["/bin/bash", "-c", "./run.sh"]

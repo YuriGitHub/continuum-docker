@@ -1,0 +1,207 @@
+{
+    "apiVersion": "v1",
+    "kind": "Template",
+    "labels": {
+        "template": "continuum-template"
+    },
+    "message": "The following services will be created in your project:  continuum and mongodb",
+    "metadata": {
+        "annotations": {
+            "description": "This is the description for Continuum.",
+            "iconClass": "collabnet-versionone",
+            "openshift.io/display-name": "CollabNet VersionOne Continuum",
+            "openshift.io/documentation-url": "https://www.collab.net/products/continuum",
+            "openshift.io/long-description": "This is the long description for Continuum.",
+            "openshift.io/provider-display-name": "CollabNet VersionOne",
+            "openshift.io/support-url": "https://www.collab.net",
+            "tags": "continuum"
+        },
+        "name": "continuum"
+    },
+    "objects": [
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {                   
+                },
+                "name": "${CONTINUUM_SERVICE_NAME}"
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "continuum",
+                        "nodePort": 0,
+                        "port": 8080,
+                        "protocol": "TCP",
+                        "targetPort": 8080
+                    },
+                    {
+                        "name": "continuum-api",
+                        "nodePort": 0,
+                        "port": 8083,
+                        "protocol": "TCP",
+                        "targetPort": 8083
+                    },
+                    {
+                        "name": "mongodb",
+                        "nodePort": 0,
+                        "port": 27017,
+                        "protocol": "TCP",
+                        "targetPort": 27017
+                    }
+                ],
+                "selector": {
+                    "name": "${CONTINUUM_SERVICE_NAME}"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "name": "${CONTINUUM_SERVICE_NAME}"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "${VOLUME_CAPACITY}"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "DeploymentConfig",
+            "metadata": {
+                "annotations": {
+                    "template.alpha.openshift.io/wait-for-ready": "true"
+                },
+                "name": "${CONTINUUM_SERVICE_NAME}"
+            },
+            "spec": {
+                "replicas": 1,
+                "selector": {
+                    "name": "${CONTINUUM_SERVICE_NAME}"
+                },
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "name": "${CONTINUUM_SERVICE_NAME}"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "capabilities": {},
+                                "env": [
+                                ],
+                                "image": "registry.hub.docker.com/jdfranger/continuum-db:latest",
+                                "imagePullPolicy": "IfNotPresent",
+                                "livenessProbe": {
+                                    "initialDelaySeconds": 30,
+                                    "tcpSocket": {
+                                        "port": 27017
+                                    },
+                                    "timeoutSeconds": 1
+                                },
+                                "name": "continuum",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "containerPort": 8083,
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "containerPort": 27017,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {
+                                    "limits": {
+                                        "memory": "${MEMORY_LIMIT}"
+                                    }
+                                },
+                                "securityContext": {
+                                    "capabilities": {},
+                                    "privileged": false
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/var/lib/mongodb/data",
+                                        "name": "${CONTINUUM_SERVICE_NAME}-data"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "volumes": [
+                            {
+                                "name": "${CONTINUUM_SERVICE_NAME}-data",
+                                "persistentVolumeClaim": {
+                                    "claimName": "${CONTINUUM_SERVICE_NAME}"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "status": {}
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Route",
+            "metadata": {
+                "name": "continuum-route"
+            },
+            "spec": {
+                "port": {
+                    "targetPort": "continuum"
+                },
+                "to": {
+                    "kind": "Service",
+                    "name": "${CONTINUUM_SERVICE_NAME}"
+                }
+            }
+        }
+    ],
+    "parameters": [
+        {
+            "description": "The name of the OpenShift Service exposed for Continuum.",
+            "displayName": "Continuum Service Name",
+            "name": "CONTINUUM_SERVICE_NAME",
+            "required": true,
+            "value": "continuum"
+        },
+        {
+            "description": "Volume space available for data, e.g. 512Mi, 2Gi.",
+            "displayName": "Volume Capacity",
+            "name": "VOLUME_CAPACITY",
+            "required": true,
+            "value": "1Gi"
+        },
+        {
+            "description": "Maximum amount of memory the container can use.",
+            "displayName": "Memory Limit",
+            "name": "MEMORY_LIMIT",
+            "required": true,
+            "value": "512Mi"
+        }
+    ]
+}

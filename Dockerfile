@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
     openssh-client=1:7.2p2-4ubuntu2.4 \
     python=2.7.12-1~16.04 \
     sudo=1.8.16-0ubuntu1.5 \
-    python-pip
+    python-pip \
+    vim
 
 RUN pip install psycopg2
 

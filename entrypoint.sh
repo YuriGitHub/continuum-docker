@@ -16,6 +16,8 @@ set -e
 #
 #
 CONFIG_FILE="/etc/continuum/continuum.yaml"
+echo "${two_spaces}session_db:${space}rds.us-east-2.test.ossum.cloud" >> ${CONFIG_FILE}
+echo "${two_spaces}multi_tenant:${space}true" >> ${CONFIG_FILE}
 #
 # Include Ossum related keys/values in configuration for authentication.
 #

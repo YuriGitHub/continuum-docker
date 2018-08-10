@@ -16,13 +16,6 @@ set -e
 #
 #
 CONFIG_FILE="/etc/continuum/continuum.yaml"
-SERVICE_CONFIG_FILE="/etc/continuum/service.conf"
-
-if [ -f "${SERVICE_CONFIG_FILE}" ]; then
-    if [ ! -z "${SERVICE}"]; then
-        echo "service ${SERVICE}" >> ${SERVICE_CONFIG_FILE}
-fi
-
 #
 # Include Ossum related keys/values in configuration for authentication.
 #

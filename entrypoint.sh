@@ -95,8 +95,8 @@ if [ -z "${SKIP_DATABASE}" ]; then
     #
     #
     echo "[INFO] Initializing and running database upgrades"
-    ${CONTINUUM_HOME}/common/install/init_mongodb.py --password "${DEFAULT_ADMIN_PASSWORD}" &> /dev/null \
-    || ${CONTINUUM_HOME}/common/updatedb.py &> /dev/null
+    ${CONTINUUM_HOME}/common/install/init_mongodb.py --password "${DEFAULT_ADMIN_PASSWORD}" \
+    || ${CONTINUUM_HOME}/common/updatedb.py
 fi
 
 #

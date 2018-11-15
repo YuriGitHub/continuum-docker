@@ -50,8 +50,14 @@ RUN apt-get update && apt-get install -y \
     && chown -R continuum:continuum /opt/continuum /etc/continuum /var/continuum \
     # Log directory is created dynamically by the root, not sure wwhy yet,
     # this is a quick fix
-    && touch /var/continuum/log \
-    && chown -R continuum:continuum /var/continuum/log
+    && export logs=/var/continuum/log \
+    && mkdir $logs \
+    && touch $logs/ctm-ui.log \
+    && touch $logs/ctm-core.log \
+    && touch $logs/ctm-jobhandler.log \
+    && touch $logs/ctm-msghub.log \
+    && touch $logs/ctm-poller.log \
+    && chown -R continuum:continuum $logs
 
 ENV CONTINUUM_HOME /opt/continuum/current
 ENV PATH=${CONTINUUM_HOME}/common/bin:${CONTINUUM_HOME}/client/bin:${PATH}

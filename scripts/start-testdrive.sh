@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 set -ex
 
-build() {
+build_images() {
     # This will build the image locally and pull the remaining images to run.
     # Eventually is should pull the Continuum image too, I'm just iterating to
     # find the best way to do that without adding more docker-composes
 
     # Builds Continuum
-    docker-compose -f prod/docker-compose.yml build
+    docker-compose -f prod/docker-compose.yml build --no-cache
     # Pulls MongoDB and other services for demo
     docker-compose -f prod/docker-compose.yml pull mongodb
 #    docker-compose -f testlab/docker-compose.yml pull jenkins gitlab jira
 }
 
-start() {
+start_services() {
     # Setup environment
     #export UI_EXTERNAL_URL="something"
     docker-compose -f prod/docker-compose.yml up
@@ -24,10 +24,10 @@ while [[ $# > 0 ]]; do
     key="$1"
     case "$key" in
         --build)
-            _build=true
+            build=true
             ;;
         --start)
-            _start=true
+            start=true
             ;;
         --help)
             # Todo
@@ -41,10 +41,12 @@ while [[ $# > 0 ]]; do
     shift
 done
 
-if [ -n $_build ]; then
-    build
+if [ -n "$build" ]; then
+    echo Building images
+    build_images
 fi
 
-if [ -n $_start ]; then
-    start
+if [ -n "$start" ]; then
+    echo Starting services
+    start_services
 fi

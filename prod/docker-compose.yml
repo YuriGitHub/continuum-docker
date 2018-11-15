@@ -16,11 +16,15 @@ services:
       - "8080:8080"
       - "8083:8083"
     volumes:
-      - $PWD/prod/logs:/var/continuum/log
+      - logs:/var/continuum/log
 
   mongodb:
     image: mongo:3.6-jessie
     logging:
       driver: "none"
     volumes:
-      - $PWD/prod/data:/data/db
+      - data:/data/db
+
+volumes:
+  logs:
+  data:

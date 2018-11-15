@@ -47,17 +47,7 @@ RUN apt-get update && apt-get install -y \
     && useradd --gid continuum --groups sudo --system continuum \
     && echo continuum:continuum | chpasswd \
     # Change permissions
-    && chown -R continuum:continuum /opt/continuum /etc/continuum /var/continuum \
-    # Log directory is created dynamically by the root, not sure wwhy yet,
-    # this is a quick fix
-    && export logs=/var/continuum/log \
-    && mkdir -p $logs \
-    && touch $logs/ctm-ui.log \
-    && touch $logs/ctm-core.log \
-    && touch $logs/ctm-jobhandler.log \
-    && touch $logs/ctm-msghub.log \
-    && touch $logs/ctm-poller.log \
-    && chown -R continuum:continuum $logs
+    && chown -R continuum:continuum /opt/continuum /etc/continuum /var/continuum
 
 ENV CONTINUUM_HOME /opt/continuum/current
 ENV PATH=${CONTINUUM_HOME}/common/bin:${CONTINUUM_HOME}/client/bin:${PATH}

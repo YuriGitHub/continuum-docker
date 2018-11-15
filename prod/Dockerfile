@@ -51,7 +51,7 @@ RUN apt-get update && apt-get install -y \
     # Log directory is created dynamically by the root, not sure wwhy yet,
     # this is a quick fix
     && export logs=/var/continuum/log \
-    && mkdir $logs \
+    && mkdir -p $logs \
     && touch $logs/ctm-ui.log \
     && touch $logs/ctm-core.log \
     && touch $logs/ctm-jobhandler.log \

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -ex
 
-_build=0
 build() {
     # This will build the image locally and pull the remaining images to run.
     # Eventually is should pull the Continuum image too, I'm just iterating to
@@ -14,7 +13,6 @@ build() {
 #    docker-compose -f testlab/docker-compose.yml pull jenkins gitlab jira
 }
 
-_start=0
 start() {
     # Setup environment
     #export UI_EXTERNAL_URL="something"
@@ -26,10 +24,10 @@ while [[ $# > 0 ]]; do
     key="$1"
     case "$key" in
         --build)
-            _build=1
+            _build=true
             ;;
         --start)
-            _start=1
+            _start=true
             ;;
         --help)
             # Todo
@@ -43,10 +41,10 @@ while [[ $# > 0 ]]; do
     shift
 done
 
-if $_build; then
+if [ -n $_build ]; then
     build
 fi
 
-if $_start; then
+if [ -n $_start ]; then
     start
 fi

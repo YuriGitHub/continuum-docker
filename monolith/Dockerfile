@@ -1,6 +1,6 @@
 FROM continuum:prod
 
-LABEL is-production="false"
+LABEL is_production="false"
 
 USER root
 

@@ -31,7 +31,7 @@ FROM ubuntu:16.04 as api
 LABEL maintainer.name="Alejandro Guzman"
 LABEL maintainer.username="@agguzman"
 LABEL maintainer.email="aguzman@collab.net"
-LABEL is-production="false"
+LABEL is_production="false"
 
 ARG DEBIAN_FRONTEND=noninteractive
 

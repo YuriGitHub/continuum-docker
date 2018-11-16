@@ -25,7 +25,9 @@ RUN apt-get update && apt-get install -y \
     sudo \
     curl \
     python \
+    # Enables tasks to run on itself or other servers
     openssh-client \
+    openssh-server \
     openssl \
     ca-certificates \
     # Install Continuum

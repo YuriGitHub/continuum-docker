@@ -5,11 +5,23 @@ services:
     image: jwilder/nginx-proxy
     ports:
       - "80:80"
+      - "443:443"
     volumes:
+      - ./certs:/etc/nginx/certs
       - /var/run/docker.sock:/tmp/docker.sock
     restart: always
     networks:
-      - prod
+      - proxy
+
+  smtp:
+    image: namshi/smtp
+    environment:
+      DISABLE_IPV6: "true"
+    restart: always
+    ports:
+      - "25:25"
+    networks:
+      - backend
 
   continuum:
     build:
@@ -18,20 +30,24 @@ services:
     environment:
       CONTINUUM_MONGODB_SERVER: mongodb
       INSTALLER_LINK: ""
-      VIRTUAL_HOST: local.prod.continuum
+      VIRTUAL_HOST: continuum.prod.local
       VIRTUAL_PORT: 8080
+      HTTPS_METHOD: noredirect
+      HSTS: "off"
     depends_on:
       - mongodb
     links:
       - mongodb
-    ports:
-      - "8080:8080"
-      - "8083:8083"
+    expose:
+      - "8080"
+      - "8083"
     volumes:
       - logs:/var/continuum/log
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: always
     networks:
-      - prod
+      - proxy
+      - backend
 
   mongodb:
     image: mongo:3.6-jessie
@@ -41,11 +57,12 @@ services:
       - data:/data/db
     restart: always
     networks:
-      - prod
+      - backend
 
 volumes:
   logs:
   data:
 
 networks:
-  prod:
+  backend:
+  proxy:

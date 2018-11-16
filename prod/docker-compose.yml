@@ -1,6 +1,16 @@
 version: "3.7"
 services:
 
+  nginx:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+    restart: always
+    networks:
+      - prod
+
   continuum:
     build:
       context: ..
@@ -8,6 +18,8 @@ services:
     environment:
       CONTINUUM_MONGODB_SERVER: mongodb
       INSTALLER_LINK: ""
+      VIRTUAL_HOST: local.prod.continuum
+      VIRTUAL_PORT: 8080
     depends_on:
       - mongodb
     links:
@@ -17,6 +29,9 @@ services:
       - "8083:8083"
     volumes:
       - logs:/var/continuum/log
+    restart: always
+    networks:
+      - prod
 
   mongodb:
     image: mongo:3.6-jessie
@@ -24,7 +39,13 @@ services:
       driver: "none"
     volumes:
       - data:/data/db
+    restart: always
+    networks:
+      - prod
 
 volumes:
   logs:
   data:
+
+networks:
+  prod:

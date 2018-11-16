@@ -57,6 +57,7 @@ add_setting ui_enable_tokenauth ${TOKEN_AUTH}
 add_setting msghub_enabled ${MSGHUB}
 add_setting rest_api_allowed_origins ${APPLICATION_URL}
 add_setting ui_external_url ${UI_EXTERNAL_URL}
+add_setting msghub_external_url ${MSGHUB_EXTERNAL_URL}
 
 # ############################################################################
 # Database initialization and update

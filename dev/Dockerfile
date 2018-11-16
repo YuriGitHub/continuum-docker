@@ -43,7 +43,7 @@ ENV CONTINUUM_VERSION 18.3.0.67
 # Location of Continuum releases
 ENV CONTINUUM_RELEASES https://s3.amazonaws.com/versionone-downloads/continuum
 
-ENV DOCKERVERSION=18.03.1-ce
+ENV DOCKER_VERSION 18.03.1-ce
 
 COPY ./dev/requirements.txt /
 
@@ -68,9 +68,9 @@ RUN apt-get update && apt-get install -y \
     libsasl2-dev \
     libssl-dev \
     # Docker in Docker
-    && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
-    && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
-    && rm docker-${DOCKERVERSION}.tgz \
+    && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz \
+    && tar xzvf docker-${DOCKER_VERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
+    && rm docker-${DOCKER_VERSION}.tgz \
     # For now having the reqs here is okay since they do not change often
     # but eventually we'd want to leverage mounting the local thirdparty repo
     # if it's available or downloading the raw reqs from thirdparty repo.

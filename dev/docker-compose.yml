@@ -58,7 +58,7 @@ services:
     volumes:
       - $CONTINUUM_REPO:/opt/continuum/current
       - ctm-dev-logs:/var/continuum
-      - /var/run/docker.sock:/tmp/docker.sock:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
 
   mongodb:

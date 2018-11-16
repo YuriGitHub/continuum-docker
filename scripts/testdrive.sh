@@ -9,15 +9,15 @@ build_images() {
     # Builds Continuum
     docker-compose -f prod/docker-compose.yml build --no-cache
     # Pulls MongoDB and other services for demo
-    docker-compose -f prod/docker-compose.yml pull mongodb
-#    docker-compose -f testlab/docker-compose.yml pull jenkins gitlab jira
+    docker-compose -f prod/docker-compose.yml pull mongodb smtp
+    docker-compose -f testlab/docker-compose.yml pull jenkins gitlab
 }
 
 start_services() {
     # Setup environment
     #export UI_EXTERNAL_URL="something"
-    docker-compose -f prod/docker-compose.yml up
-#    docker-compose -f prod/docker-compose.yml -f testlab/docker-compose.yml up continuum mongodb jenkins gitlab jira
+#    docker-compose -f prod/docker-compose.yml up
+    docker-compose -f prod/docker-compose.yml -f testlab/docker-compose.yml up smtp continuum mongodb jenkins gitlab
 }
 
 while [[ $# > 0 ]]; do

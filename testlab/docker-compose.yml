@@ -34,6 +34,7 @@ services:
       - gitlab-data:/var/opt/gitlab
       - gitlab-config:/etc/gitlab
       - gitlab-logs:/var/log/gitlab
+    restart: always
 
   jenkins:
     image: jenkins/jenkins:lts
@@ -42,6 +43,7 @@ services:
 #      - "50000:50000"
     volumes:
       - jenkins-data:/var/jenkins_home
+    restart: always
 
   # https://hub.docker.com/r/jetbrains/teamcity-server/
   # https://www.jetbrains.com/teamcity/buy/license.html

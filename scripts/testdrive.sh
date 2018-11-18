@@ -9,8 +9,8 @@ build_images() {
 }
 
 start_services() {
-    local svr=$1
-    docker-compose -f prod/docker-compose.yml -f testlab/docker-compose.yml up -d "$svr"
+    local svr=$@
+    docker-compose -f prod/docker-compose.yml -f testlab/docker-compose.yml up -d ${svr}
 }
 
 while [[ $# > 0 ]]; do

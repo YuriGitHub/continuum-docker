@@ -5,7 +5,7 @@ build_images() {
     # Builds Continuum and pulls MongoDB and other services for test drive
     docker-compose -f prod/docker-compose.yml build --no-cache
     docker-compose -f prod/docker-compose.yml pull
-    docker-compose -f testlab/docker-compose.yml pull
+#    docker-compose -f testlab/docker-compose.yml pull
 }
 
 start_services() {

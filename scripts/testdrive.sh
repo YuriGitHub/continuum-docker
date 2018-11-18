@@ -2,22 +2,15 @@
 set -ex
 
 build_images() {
-    # This will build the image locally and pull the remaining images to run.
-    # Eventually is should pull the Continuum image too, I'm just iterating to
-    # find the best way to do that without adding more docker-composes
-
-    # Builds Continuum
+    # Builds Continuum and pulls MongoDB and other services for test drive
     docker-compose -f prod/docker-compose.yml build --no-cache
-    # Pulls MongoDB and other services for demo
-    docker-compose -f prod/docker-compose.yml pull mongodb smtp
-    docker-compose -f testlab/docker-compose.yml pull jenkins gitlab
+    docker-compose -f prod/docker-compose.yml pull
+    docker-compose -f testlab/docker-compose.yml pull
 }
 
 start_services() {
-    # Setup environment
-    #export UI_EXTERNAL_URL="something"
-#    docker-compose -f prod/docker-compose.yml up
-    docker-compose -f prod/docker-compose.yml -f testlab/docker-compose.yml up smtp continuum mongodb jenkins gitlab
+    local svr=$1
+    docker-compose -f prod/docker-compose.yml -f testlab/docker-compose.yml up -d "$svr"
 }
 
 while [[ $# > 0 ]]; do
@@ -28,6 +21,8 @@ while [[ $# > 0 ]]; do
             ;;
         --start)
             start=true
+            services=$2
+            shift
             ;;
         --help)
             # Todo
@@ -48,5 +43,5 @@ fi
 
 if [ -n "$start" ]; then
     echo Starting services
-    start_services
+    start_services $services
 fi

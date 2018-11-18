@@ -60,7 +60,6 @@ services:
       - ctm-dev-logs:/var/continuum
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-
   mongodb:
     image: mongo:3.6-jessie
     logging:

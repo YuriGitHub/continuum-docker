@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
+import base64
 import time
 import requests
 
@@ -9,50 +10,42 @@ import requests
 # https://github.com/versionone/continuum-tools/wiki/Create-Test-Drives-in-AWS
 # ############################################################################
 
+def log_step(step, message=''):
+    print(f'[x] {time.time()} [Step {step}] {message}')
 
-# EC2 DNS name or IP
-host = ''
-# Continuum URL, from host perspective
-ctm_url = 'http://localhost'
-ctm_api = ctm_url + '/api'
-ctm_token = '<ADMINISTRATOR_TOKEN>'
-headers = {'Authorization': 'Token ' + ctm_token,
-           'Content-Type': 'application/json',
-           'Host': 'continuum.prod.local'}
+def get_container_command(name):
+    return f'docker container ls --quiet --filter name={name}'
 
+def docker_command(container, command):
+    return f'docker container exec {container} {command}'
 
-def ping_continuum():
-    for i in [.3, .7, 1.5, 3, 7, None]:
-        try:
-            response = requests.get(ctm_url + '/version')
-            response.raise_for_status()
-        except requests.exceptions.Timeout as e:
-            print(str(e))
-            if i is not None:
-                print('Continuum server not ready, sleeping')
-                time.sleep(1)
-            else:
-                print('Continuum server not ready, exiting')
-                exit(1)
+# Seems like this is acting on existing data "stores-ui"
+# todo: Need to automate data population
+def jenkins_sed_command(_host, _file):
+    return f'sed -i"" -e"s|<url>.*</url>|<url>http://{_host}/root/stores-ui.git</url>|" {_file}'
 
+def gitlab_sed_command(_host):
+    return f'sed -i"" -e"s|external_url .*$|external_url {_host}|" /etc/gitlab/gitlab.rb'
 
-def configure_instance(payload):
-    response = requests.post(ctm_api + '/configure_plugin_instance',
-                             payload, headers=headers)
-    response.raise_for_status()
-    return response
+def continuum_append_command(ui_url):
+    return f'echo "  ui_external_url: {ui_url}" >> /etc/continuum/continuum.yaml'
 
 
 if __name__ == '__main__':
-    ping_continuum()
 
-    # Step 7
-    # add CTM url in LC
-    # - allows demonstration of fixing rogue commits.
+    post = requests.post
+    url = 'http://localhost/api'
+    host = 'not sure what perspective this is from'
+    basic = base64.b64encode('administrator:password')
+    headers = {'Content-Type': 'application/json',
+               'Authorization': f'Basic {basic}',
+               'Host': 'continuum.prod.local'}
+
+    plugins = []
 
     # Step 8
     # Lifecycle plugin, adds WorkItem lookup ability
-    configure_instance({
+    plugins.append({
         'plugin': 'v1plugin',
         'name': 'default',
         'api_token': '',
@@ -62,9 +55,9 @@ if __name__ == '__main__':
 
     # Step 9
     # Gitlab plugin, for cloning repos during pipeline/task automation
-    configure_instance({
+    plugins.append({
         'plugin': 'gitlab',
-        'name': 'default',
+        'name': 'gitlab',
         'api_token': '',
         'url': 'http://gitlab',
         'is_default': True
@@ -72,18 +65,30 @@ if __name__ == '__main__':
 
     # Step 10
     # Jenkins plugin, for CI
-    configure_instance({
+    plugins.append({
         'plugin': 'jenkins',
-        'name': 'default',
+        'name': 'jenkins',
         'user': 'admin',
         'password': '<comes from jenkins logs>',
         'url': 'http://jenkins',
         'is_default': True
     })
 
+    log_step('8', 'Configuring plugins in Continuum')
+    for plugin in plugins:
+        endpoint = f'{url}/configure_plugin_instance'
+        response = post(endpoint, headers=headers)
+        response.raise_for_status()
+
+    # Step 7
+    # add CTM url in LC
+    # - allows demonstration of fixing rogue commits.
+
     # step 11. reference the correct continuum url (may be unnecessary)
     # Change Continuum external URL in config file
-    # os.system('echo "  ui_external_url: ${value}" >> ${CONFIG_FILE}')
+    log_step('11', 'Changing external URL in Continuum')
+    continuum_container = get_container_command('continuum')
+    os.system(docker_command(continuum_container, continuum_append_command(host)))
 
     # step 12
     # Add Continuum URL in Gitlab, pushing web hook payloads to Continuum
@@ -91,40 +96,27 @@ if __name__ == '__main__':
     # step 13
     # Configure Jenkins
     # NOTE: this needs to be done within the Jenkins container or on the mount
+    jenkins_dir = '/var/lib/jenkins/jobs/'
+    files = ['stores-ui/config.xml',
+             'retail-site/config.xml',
+             'stores-app-server/config.xml',
+             'stores-app-srv/config.xml',
+             'stores-ui-web/config.xml']
 
-
-    def configure_jenkins():
-        files = {
-            '/var/lib/jenkins/jobs/stores-ui/config.xml': lambda host: 'sed -i"" -e"s|<url>.*</url>|<url>http://%s/root/stores-ui.git</url>|"' % host,
-            '/var/lib/jenkins/jobs/retail-site/config.xml': lambda host: 'sed -i"" -e"s|<url>.*</url>|<url>http://%s/root/stores-ui.git</url>|"' % host,
-            '/var/lib/jenkins/jobs/stores-app-server/config.xml': lambda host: 'sed -i"" -e"s|<url>.*</url>|<url>http://%s/root/stores-ui.git</url>|"' % host,
-            '/var/lib/jenkins/jobs/stores-app-srv/config.xml': lambda host: 'sed -i"" -e"s|<url>.*</url>|<url>http://%s/root/stores-ui.git</url>|"' % host,
-            '/var/lib/jenkins/jobs/stores-ui-web/config.xml': lambda host: 'sed -i"" -e"s|<url>.*</url>|<url>http://%s/root/stores-ui.git</url>|"' % host
-        }
-
-        def run_docker_command(container, command):
-            return 'docker container exec %s %s' % (container, command)
-
-        for f, rg in files.iteritems():
-            cmd = rg('host') + ' ' + f
-            print(run_docker_command('prod_jenkins_1', cmd))
-            # os.system(run_docker_command('prod_jenkins_1', cmd))
-
-    for cmd in [
-        'sudo sed -i"" -e"s|<url>.*</url>|<url>http://' + host + '/root/stores-ui.git</url>|" /var/lib/jenkins/jobs/stores-ui/config.xml',
-        'sudo sed -i"" -e"s|<url>.*</url>|<url>http://' + host + '/root/retail-site.git</url>|" /var/lib/jenkins/jobs/retail-site/config.xml',
-        'sudo sed -i"" -e"s|<url>.*</url>|<url>http://' + host + '/root/stores-app-server.git</url>|" /var/lib/jenkins/jobs/stores-app-server/config.xml',
-        'sudo sed -i"" -e"s|<url>.*</url>|<url>http://' + host + '/root/stores-app-srv.git</url>|" /var/lib/jenkins/jobs/stores-app-srv/config.xml',
-        'sudo sed -i"" -e"s|<url>.*</url>|<url>http://' + host + '/root/stores-ui-web.git</url>|" /var/lib/jenkins/jobs/stores-ui-web/config.xml',
-    ]:
-        os.system(run_docker_command('prod_jenkins_1', cmd))
+    log_step('13', 'Updating host in Jenkins project files')
+    for f in files:
+        jenkins_container = os.system(get_container_command('jenkins'))
+        os.system(docker_command(jenkins_container, jenkins_sed_command(host, jenkins_dir + f)))
 
     # Step 14
     # Change GitLab external URL
-    os.system('sudo sed -i"" -e"s|external_url .*$|external_url ' + host + '|" /etc/gitlab/gitlab.rb')
+    log_step('14', 'Changing external URL in Gitlab')
+    gitlab_container = os.system(get_container_command('gitlab'))
+    os.system(docker_command(gitlab_container, gitlab_sed_command(host)))
 
     # Step 15
     # Generate new license
+    # log_step('15', 'Generating a new license')
 
     # Step 16
     # Set remainder or better yet, create a cron job in Continuum Production to

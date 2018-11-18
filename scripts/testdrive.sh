@@ -22,7 +22,9 @@ while [[ $# > 0 ]]; do
         --start)
             start=true
             services=$2
-            shift
+            if [[ -n "${services}" ]]; then
+                shift
+            fi
             ;;
         --help)
             # Todo

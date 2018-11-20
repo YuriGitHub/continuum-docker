@@ -55,6 +55,9 @@ services:
     expose:
       - "8080"
       - "8083"
+    ports:
+      - "8080:8080"
+      - "8083:8083"
     volumes:
       - $CONTINUUM_REPO:/opt/continuum/current
       - ctm-dev-logs:/var/continuum

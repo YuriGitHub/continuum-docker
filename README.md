@@ -47,7 +47,7 @@ Then start the containers.
 docker-compose -f dev/docker-compose.yml up --build
 ```
 
-Continuum should now be available at http://localhost:9000  
+Continuum should now be available at http://localhost:8080
 Default login: _administrator/password_  
 Happy dev-ing!
 ##### How to improve Development

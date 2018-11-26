@@ -28,19 +28,38 @@ services:
     image: gitlab/gitlab-ce
     ports:
       - '9003:80'
-      - '9004:443'
-      - '9005:22'
+#      - '9004:443'
+#      - '9005:22'
+    expose:
+      - "80"
+#      - "9004"
+#      - "9005"
+    environment:
+      VIRTUAL_HOST: gitlab.prod.local
+      # Need to map to the internal port
+      VIRTUAL_PORT: 80
+      HTTPS_METHOD: noredirect
+      HSTS: "off"
     volumes:
       - gitlab-data:/var/opt/gitlab
       - gitlab-config:/etc/gitlab
       - gitlab-logs:/var/log/gitlab
     restart: always
+    networks:
+      - proxy
 
   jenkins:
     image: jenkins/jenkins:lts
     ports:
       - "9006:8080"
 #      - "50000:50000"
+    expose:
+      - "8080"
+    environment:
+      VIRTUAL_HOST: jenkins.prod.local
+      VIRTUAL_PORT: 8080
+      HTTPS_METHOD: noredirect
+      HSTS: "off"
     volumes:
       - jenkins-data:/var/jenkins_home
     restart: always
@@ -66,3 +85,8 @@ volumes:
   jenkins-data:
   teamcity-data:
   teamcity-logs:
+
+networks:
+  proxy:
+    external:
+      name: proxy

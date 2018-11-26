@@ -38,6 +38,9 @@ services:
       VIRTUAL_PORT: 8080
       HTTPS_METHOD: noredirect
       HSTS: "off"
+      # MSGHUB allows for wss connections
+      UI_EXTERNAL_PORT: https://continuum.prod.local
+      MSGUHB_EXTERNAL_PORT: wss://continuum.prod.local
     depends_on:
       - mongodb
     links:
@@ -73,3 +76,5 @@ volumes:
 networks:
   backend:
   proxy:
+    external:
+      name: proxy

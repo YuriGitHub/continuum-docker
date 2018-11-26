@@ -19,7 +19,7 @@ Continuum should now be available at http://localhost:8080
 Default login: _administrator/password_  
 
 Additionally! You can spin up services for a few integrations we support.
-You can use the `testlabdocker-compose.test-bench.yml` in addition with the `prod/docker-compose.yml`.
+You can use the `testlab/docker-compose.test-bench.yml` in addition with the `prod/docker-compose.yml`.
 
 ```bash
 docker-compose -f prod/docker-compose.yml -f testlab/docker-compose.test-bench.yml up --build
@@ -47,7 +47,7 @@ Then start the containers.
 docker-compose -f dev/docker-compose.yml up --build
 ```
 
-Continuum should now be available at http://localhost:9000  
+Continuum should now be available at http://localhost:8080
 Default login: _administrator/password_  
 Happy dev-ing!
 ##### How to improve Development

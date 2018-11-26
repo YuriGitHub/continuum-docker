@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 LABEL maintainer.name="Alejandro Guzman"
 LABEL maintainer.username="@agguzman"
 LABEL maintainer.email="aguzman@collab.net"
-LABEL is-production="true"
+LABEL is_production="true"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -25,7 +25,9 @@ RUN apt-get update && apt-get install -y \
     sudo \
     curl \
     python \
+    # Enables tasks to run on itself or other servers
     openssh-client \
+    openssh-server \
     openssl \
     ca-certificates \
     # Install Continuum
@@ -47,11 +49,7 @@ RUN apt-get update && apt-get install -y \
     && useradd --gid continuum --groups sudo --system continuum \
     && echo continuum:continuum | chpasswd \
     # Change permissions
-    && chown -R continuum:continuum /opt/continuum /etc/continuum /var/continuum \
-    # Log directory is created dynamically by the root, not sure wwhy yet,
-    # this is a quick fix
-    && touch /var/continuum/log \
-    && chown -R continuum:continuum /var/continuum/log
+    && chown -R continuum:continuum /opt/continuum /etc/continuum /var/continuum
 
 ENV CONTINUUM_HOME /opt/continuum/current
 ENV PATH=${CONTINUUM_HOME}/common/bin:${CONTINUUM_HOME}/client/bin:${PATH}

@@ -1,6 +1,28 @@
 version: "3.7"
 services:
 
+  proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./certs:/etc/nginx/certs
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    restart: always
+    networks:
+      - proxy
+
+  mail:
+    image: namshi/smtp
+    environment:
+      DISABLE_IPV6: "true"
+    restart: always
+    ports:
+      - "25:25"
+    networks:
+      - backend
+
   web:
     build:
       context: ..
@@ -27,14 +49,19 @@ services:
     links:
       - mongodb
     networks:
+      - proxy
       - frontend
       - backend
+    expose:
+      - "8080"
+      - "8083"
     ports:
-      - "9000:8080"
+      - "8080:8080"
       - "8083:8083"
     volumes:
       - $CONTINUUM_REPO:/opt/continuum/current
       - ctm-dev-logs:/var/continuum
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
   mongodb:
     image: mongo:3.6-jessie
@@ -48,6 +75,7 @@ services:
 networks:
   frontend:
   backend:
+  proxy:
 
 volumes:
   ctm-dev-logs:

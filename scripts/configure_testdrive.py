@@ -45,6 +45,7 @@ if __name__ == '__main__':
 
     # Step 8
     # Lifecycle plugin, adds WorkItem lookup ability
+    log_step('8', 'Configuring V1 plugin in Continuum')
     plugins.append({
         'plugin': 'v1plugin',
         'name': 'default',
@@ -55,6 +56,7 @@ if __name__ == '__main__':
 
     # Step 9
     # Gitlab plugin, for cloning repos during pipeline/task automation
+    log_step('9', 'Configuring Gitlab plugin in Continuum')
     plugins.append({
         'plugin': 'gitlab',
         'name': 'gitlab',
@@ -65,6 +67,7 @@ if __name__ == '__main__':
 
     # Step 10
     # Jenkins plugin, for CI
+    log_step('8', 'Configuring Jenkins plugin in Continuum')
     plugins.append({
         'plugin': 'jenkins',
         'name': 'jenkins',
@@ -74,7 +77,6 @@ if __name__ == '__main__':
         'is_default': True
     })
 
-    log_step('8', 'Configuring plugins in Continuum')
     for plugin in plugins:
         endpoint = f'{url}/configure_plugin_instance'
         response = post(endpoint, headers=headers)

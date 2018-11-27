@@ -77,6 +77,17 @@ services:
       - teamcity-data:/data/teamcity_server/datadir
       - teamcity-logs:/opt/teamcity/logs
 
+  # https://hub.docker.com/_/sonarqube/
+  # admin/admin
+  sonarqube:
+    image: sonarqube:6.7.5
+    restart: always
+    ports:
+      - "9008:9000"
+      - "9009:9092"
+    networks:
+      - proxy
+
 volumes:
   artifactory-backup:
   artifactory-data:

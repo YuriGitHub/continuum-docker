@@ -28,9 +28,11 @@ prod_dockercompose=./prod/docker-compose.yml
 if [[ -n $2 ]]; then
     # If an installer link was passed in, we'll use that and get the version/tag from it
     installer_link=$2
+    # Finds a feature branch
     version=$(grep -oP '(\d{2}\.\d\.\d*\.\d*-[S|D]-\d{5})' <<< ${installer_link} || true)
     if [[ -z ${version} ]]; then
-        version=$(grep -oP '(\d{2}\.\d\.\d*\.\d)' <<< ${installer_link} || true)
+        # Finds a dev branch
+        version=$(grep -oP '(\d{2}\.\d\.\d*\.\d*)' <<< ${installer_link} || true)
     fi
     if [[ -z ${version} ]]; then
         echo "Installer link must be versioned"
@@ -42,6 +44,14 @@ else
     installer_link=$(grep -oP "(https.*installer\.sh)" ${prod_dockercompose} || true)
     if [[ -n ${installer_link} ]]; then
         version=$(grep -oP '(\d{2}\.\d\.\d*\.\d*-[S|D]-\d{5})' <<< ${installer_link} || true)
+        if [[ -z ${version} ]]; then
+            # Finds a dev branch
+            version=$(grep -oP '(\d{2}\.\d\.\d*\.\d*)' <<< ${installer_link} || true)
+        fi
+        if [[ -z ${version} ]]; then
+            echo "Installer link must be versioned"
+            exit 1
+        fi
     else
         # If we didn't find it there, we'll default to the last public version
         # listed in the prod/Dockerfile itself

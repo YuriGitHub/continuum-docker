@@ -41,6 +41,11 @@ To start make sure `$CONTINUUM_REPO` points to the root of your cloned Continuum
 export CONTINUUM_REPO=/path/to/continuum/repo
 ```
 
+And if you require the continuum tools
+```bash
+export CONTINUUM_TOOLS=/path/to/continuum/tools
+```
+
 Then start the containers.
 
 ```bash

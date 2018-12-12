@@ -111,6 +111,17 @@ fi
 ctm-start-services
 
 if [[ -n "${OSSUM}" ]]; then
+    # This creates a worker oauth user in the database via Continuum API.
+    #
+    # Currently the is_shared_asset_manager and is_system_administrator
+    # properties are not set in Continuum due to missing functionality.
+    #
+    # One will have to manually log in and update the user via the UI.
+    #
+    # This call uses the dafault username and password for the administrator.
+    # This means the call won't work if the password isn't correct, Continuum
+    # prompts to to change the administrator password on initial login.
+    #
     if [[ -n "${OSSUM_OAUTH_USERNAME}" && -n "${OSSUM_OAUTH_PASSWORD}" ]]; then
         echo "Setting up OAUTH user, service will restart after"
         sleep 5s

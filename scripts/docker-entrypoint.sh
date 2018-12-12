@@ -16,22 +16,26 @@ fi
 # This should not be here since it's only in the context of running in Ossum,
 # but it provides a sanity check when starting the container to let the
 # operator know the status of Ossum config.
-if [[ -z ${OSSUM_JWT_ISSUER} \
-    || -z ${OSSUM_JWT_AUDIENCE} \
-    || -z ${OSSUM_OAUTH_URL} \
-    || -z ${OSSUM_OAUTH_CLIENT_ID} \
-    || -z ${OSSUM_OAUTH_SECRET} \
-    || -z ${CONTINUUM_MONGODB_NAME} \
-    || -z ${CONTINUUM_MONGODB_REPLICASET_HOSTS} \
-    || -z ${CONTINUUM_MONGODB_REPLICASET_NAME} \
-    || -z ${CONTINUUM_MONGODB_USERNAME} \
-    || -z ${CONTINUUM_MONGODB_PASSWORD} \
-    || -z ${CONTINUUM_MONGODB_AUTH} \
-    || -z ${CONTINUUM_MONGODB_SSL} \
-    || -z ${CONTINUUM_ENCRYPTION_KEY} \
-    || -z ${APPLICATION_URL} \
-    ]]; then
-        echo "Ossum environment not complete"
+if [[ -n "${OSSUM}" ]]; then
+    if [[ -z ${OSSUM_JWT_ISSUER} \
+        || -z ${OSSUM_JWT_AUDIENCE} \
+        || -z ${OSSUM_OAUTH_URL} \
+        || -z ${OSSUM_OAUTH_CLIENT_ID} \
+        || -z ${OSSUM_OAUTH_SECRET} \
+        || -z ${OSSUM_OAUTH_USERNAME} \
+        || -z ${OSSUM_OAUTH_PASSWORD} \
+        || -z ${CONTINUUM_MONGODB_NAME} \
+        || -z ${CONTINUUM_MONGODB_REPLICASET_HOSTS} \
+        || -z ${CONTINUUM_MONGODB_REPLICASET_NAME} \
+        || -z ${CONTINUUM_MONGODB_USERNAME} \
+        || -z ${CONTINUUM_MONGODB_PASSWORD} \
+        || -z ${CONTINUUM_MONGODB_AUTH} \
+        || -z ${CONTINUUM_MONGODB_SSL} \
+        || -z ${CONTINUUM_ENCRYPTION_KEY} \
+        || -z ${APPLICATION_URL} \
+        ]]; then
+            echo "Ossum environment is not complete"
+    fi
 fi
 
 # ############################################################################
@@ -101,17 +105,41 @@ if [[ -f ${shelf_file} ]]; then
 fi
 
 if [[ -f /etc/continuum/service.conf ]]; then
-    echo -e "\nServices available to run\n"
     cat /etc/continuum/service.conf
 fi
 
+ctm-start-services
+
+if [[ -n "${OSSUM}" ]]; then
+    if [[ -n "${OSSUM_OAUTH_USERNAME}" && -n "${OSSUM_OAUTH_PASSWORD}" ]]; then
+        echo "Setting up OAUTH user, service will restart after"
+        sleep 5s
+        curl -s -d "{\"user\": \"${OSSUM_OAUTH_USERNAME}\", \
+            \"name\": \"${OSSUM_OAUTH_USERNAME}\", \
+            \"teams\": \"Default:Team Administrator\", \
+            \"role\": \"Administrator\", \
+            \"email\": \"${OSSUM_OAUTH_USERNAME}\", \
+            \"password\": \"${OSSUM_OAUTH_PASSWORD}\", \
+            \"forcechange\": 0, \
+            \"is_shared_asset_manager\": \"true\", \
+            \"is_system_administrator\": \"true\", \
+            \"get_token\": \"true\"}" \
+            -H "Authorization: Basic $(echo -n "administrator:password" | base64)" \
+            -H "Content-Type: application/json" \
+            -X POST http://localhost:8080/api/create_user \
+            && sleep 1s \
+            && ctm-restart-services
+    else
+        echo "Not setting up OAUTH user"
+    fi
+fi
+
 logs=/var/continuum/log
-ui=${logs}/ctm-ui.log
-core=${logs}/ctm-core.log
-jobhandler=${logs}/ctm-jobhandler.log
-msghub=${logs}/ctm-msghub.log
-poller=${logs}/ctm-poller.log
-echo "Starting Continuum services"
-ctm-start-services && tail -F ${ui} ${core} ${jobhandler} ${msghub} ${poller}
+tail -F \
+    ${logs}/ctm-ui.log \
+    ${logs}/ctm-core.log \
+    ${logs}/ctm-jobhandler.log \
+    ${logs}/ctm-msghub.log \
+    ${logs}/ctm-poller.log
 
 exec "$@"

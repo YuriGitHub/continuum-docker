@@ -33,7 +33,7 @@ services:
       CONTINUUM_ENCRYPTION_KEY: continuum
       CONTINUUM_MONGODB_SERVER: mongodb
       # Just to know that you can override the installer it used from here
-      INSTALLER_LINK: "https://s3.amazonaws.com/versionone-builds/continuum/installer/continuum-18.3.1.412-development-installer.sh"
+      INSTALLER_LINK: "https://s3.amazonaws.com/versionone-builds/continuum/installer/continuum-18.3.1.445-development-installer.sh"
       VIRTUAL_HOST: continuum.prod.local
       VIRTUAL_PORT: 8080
       HTTPS_METHOD: noredirect

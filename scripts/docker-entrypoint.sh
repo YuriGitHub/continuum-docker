@@ -49,6 +49,7 @@ add_setting() {
     local setting=$1
     local value=$2
     if [[ -n "${value}" ]]; then
+        echo "Setting configuration [${setting}] to [${value}]"
         echo "  ${setting}: ${value}" >> ${CONFIG_FILE}
     fi
 }
@@ -62,6 +63,8 @@ add_setting msghub_enabled ${MSGHUB}
 add_setting rest_api_allowed_origins ${APPLICATION_URL}
 add_setting ui_external_url ${UI_EXTERNAL_URL}
 add_setting msghub_external_url ${MSGHUB_EXTERNAL_URL}
+add_setting ui_use_ssl ${UI_SSL}
+add_setting msghub_use_ssl ${MSGHUB_SSL}
 
 # ############################################################################
 # Database initialization and update

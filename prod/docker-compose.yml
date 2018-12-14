@@ -39,8 +39,10 @@ services:
       HTTPS_METHOD: noredirect
       HSTS: "off"
       # MSGHUB allows for wss connections
-      UI_EXTERNAL_PORT: https://continuum.prod.local
-      MSGUHB_EXTERNAL_PORT: wss://continuum.prod.local
+      UI_EXTERNAL_URL: https://continuum.prod.local
+      MSGHUB_EXTERNAL_URL: wss://continuum.prod.local
+      UI_SSL: "false"
+      MSGHUB_SSL: "false"
     depends_on:
       - mongodb
     links:

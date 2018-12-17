@@ -62,7 +62,6 @@ services:
       HSTS: "off"
     volumes:
       - jenkins-data:/var/jenkins_home
-    restart: always
     networks:
       - proxy
 
